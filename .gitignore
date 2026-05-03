@@ -1,0 +1,48 @@
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Streamlit & local runtime files
+.streamlit/secrets.toml   # if you ever add secrets
+.streamlit/config.toml    # optional local config
+
+# Exported annotations (you don't want sample data in git, unless it's small & sanitized)
+exports/
+*.txt
+*.json
+!samples/                 # keep demo samples if you add them
+!utils/*.json             # but ignore JSON exports from root
+
+# IDE / editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store                # macOS Finder artifacts
+Thumbs.db                # Windows thumbnail cache
+
+# Jupyter notebook checkpoints (if any)
+.ipynb_checkpoints/
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Uploaded images (user data – never commit)
+uploads/
+temp_*/
+
+# Package manager files (keep requirements.txt but ignore lock files if not needed)
+pip-wheel-metadata/
+pip-log.txt
