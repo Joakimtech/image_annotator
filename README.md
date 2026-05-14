@@ -24,7 +24,17 @@ streamlit run app.py
 [screenshots - coming soon]
 
 ## Project Structure
-[coming soon]
+image_annotator/
+├── app.py
+├── requirements.txt       
+├── README.md              
+├── .gitignore             
+├── utils/
+│   ├── __init__.py
+│   ├── coco_exporter.py
+│   ├── yolo_exporter.py
+│   └── canvas_helper.py
+└── samples/               (empty folder for demo images)
 
 ## Future Extensions
 - Support for polygons (segmentation)
