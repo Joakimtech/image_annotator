@@ -22,6 +22,8 @@ streamlit run app.py
 
 ## Usage
 [screenshots - coming soon]
+<img width="1920" height="838" alt="image" src="https://github.com/user-attachments/assets/7104b1ce-2357-419b-9f0a-4352f7685430" />
+
 
 ## Project Structure
 image_annotator/
