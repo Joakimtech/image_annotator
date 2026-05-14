@@ -42,3 +42,5 @@ image_annotator/
 - Support for polygons (segmentation)
 - Automatic saving to cloud storage
 - Multi‑image project management
+## Visual example of tool in use
+<img width="1917" height="880" alt="image" src="https://github.com/user-attachments/assets/249fd592-79da-450b-86b4-6267d5dd08eb" />
