@@ -4,11 +4,11 @@
 A lightweight web tool built with Streamlit that lets you draw bounding boxes on images and export annotations in **YOLO** or **COCO JSON** format.
 
 ## Features
-- Upload any image (JPG/PNG)
-- Draw, delete, adjust bounding boxes via mouse
-- Assign class labels from a custom list
-- Export per‑image YOLO `.txt` or complete COCO JSON
-- Real‑time annotation statistics
+- Upload images (JPG/PNG)
+- Draw/adjust bounding boxes with mouse
+- Custom class labels
+- Export to YOLO .txt and COCO JSON
+- Annotation statistics and save/load
 
 ## Installation
 \```bash
@@ -23,6 +23,15 @@ streamlit run app.py
 ## Usage
 [screenshots - coming soon]
 <img width="1920" height="838" alt="image" src="https://github.com/user-attachments/assets/7104b1ce-2357-419b-9f0a-4352f7685430" />
+
+### 6. Final test
+
+Run `streamlit run app.py` and verify:
+- Drawing and class assignment
+- Statistics update
+- Save/load annotations
+- Export buttons create files
+
 
 
 ## Project Structure
