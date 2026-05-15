@@ -46,3 +46,9 @@ temp_*/
 # Package manager files (keep requirements.txt but ignore lock files if not needed)
 pip-wheel-metadata/
 pip-log.txt
+
+exports/
+annotations_backup.json
+*.txt
+*.json
+!samples/
