@@ -1,39 +1,47 @@
 import json
-from datetime import datetime
 
-def export_coco(bboxes, image_path, image_width, image_height, class_list, output_json_path):
-    coco_format = {
+def export_coco(bboxes, image_filename, image_width, image_height, class_list, output_path):
+    """
+    Export annotations to COCO JSON format.
+    
+    Args:
+        bboxes: list of dicts with keys 'class', 'left', 'top', 'width', 'height'
+        image_filename: name of the image file
+        image_width, image_height: dimensions
+        class_list: list of class names (index = class id)
+        output_path: path to save .json file
+    """
+    coco_data = {
         "images": [],
         "annotations": [],
         "categories": [{"id": i, "name": name} for i, name in enumerate(class_list)]
     }
     
+    # Image entry
     image_id = 1
-    annotation_id = 1
-    
-    # Add image info
-    coco_format["images"].append({
+    coco_data["images"].append({
         "id": image_id,
-        "file_name": image_path,
+        "file_name": image_filename,
         "width": image_width,
         "height": image_height
     })
     
-    # Add each bounding box as an annotation
+    # Annotation entries
+    ann_id = 1
     for box in bboxes:
+        category_id = class_list.index(box['class'])
         # COCO bbox format: [x, y, width, height]
-        x, y, w, h = box['left'], box['top'], box['width'], box['height']
-        area = w * h
-        category_id = class_list.index(box['class_name'])  # 0-indexed
-        coco_format["annotations"].append({
-            "id": annotation_id,
+        bbox = [box['left'], box['top'], box['width'], box['height']]
+        area = box['width'] * box['height']
+        coco_data["annotations"].append({
+            "id": ann_id,
             "image_id": image_id,
-            "bbox": [x, y, w, h],
-            "area": area,
             "category_id": category_id,
+            "bbox": bbox,
+            "area": area,
             "iscrowd": 0
         })
-        annotation_id += 1
+        ann_id += 1
     
-    with open(output_json_path, 'w') as f:
-        json.dump(coco_format, f, indent=2)
+    with open(output_path, 'w') as f:
+        json.dump(coco_data, f, indent=2)
