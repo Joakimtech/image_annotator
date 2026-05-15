@@ -5,13 +5,15 @@ import numpy as np
 from PIL import Image
 import json
 import os
+from utils.yolo_exporter import export_yolo
+from utils.coco_exporter import export_coco
 
 st.set_page_config(page_title="Image Annotator", layout="wide")
 st.title(" Interactive Image Annotation Tool")
 
-# Initialize session state for annotations
+# Initialize session state
 if "annotations" not in st.session_state:
-    st.session_state.annotations = {}  # {filename: [{'class':..., 'bbox':...}]}
+    st.session_state.annotations = {}
 if "current_image" not in st.session_state:
     st.session_state.current_image = None
 
@@ -33,7 +35,6 @@ if uploaded_file is not None:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     h, w = image.shape[:2]
 
-    # Load existing annotations for this image (if any)
     if filename not in st.session_state.annotations:
         st.session_state.annotations[filename] = []
 
@@ -63,7 +64,6 @@ if uploaded_file is not None:
                     "width": obj["width"],
                     "height": obj["height"]
                 })
-        # Update session state with latest boxes (canvas gives full list each time)
         st.session_state.annotations[filename] = new_bboxes
 
     # Display current annotations
@@ -75,14 +75,26 @@ if uploaded_file is not None:
     else:
         st.write("No annotations yet. Draw rectangles on the image.")
 
-    # Export buttons
+    # Export section
+    st.subheader("Export Annotations")
     col1, col2 = st.columns(2)
+    
     with col1:
         if st.button("Export as YOLO .txt"):
-            # Will implement in next step
-            st.info("YOLO export will be added in soon")
+            os.makedirs("exports", exist_ok=True)
+            base_name = os.path.splitext(filename)[0]
+            yolo_path = os.path.join("exports", f"{base_name}.txt")
+            class_map = {name: i for i, name in enumerate(class_list)}
+            export_yolo(current_boxes, w, h, class_map, yolo_path)
+            st.success(f"✅ YOLO saved to {yolo_path}")
+    
     with col2:
         if st.button("Export as COCO JSON"):
-            st.info("COCO export will be added in Soon")
+            os.makedirs("exports", exist_ok=True)
+            base_name = os.path.splitext(filename)[0]
+            coco_path = os.path.join("exports", f"{base_name}_coco.json")
+            export_coco(current_boxes, filename, w, h, class_list, coco_path)
+            st.success(f"✅ COCO JSON saved to {coco_path}")
+
 else:
     st.info(" Upload an image to start annotating")
