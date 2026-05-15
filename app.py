@@ -11,14 +11,14 @@ from utils.coco_exporter import export_coco
 st.set_page_config(page_title="Image Annotator", layout="wide")
 st.title(" Interactive Image Annotation Tool")
 
-# Initialize session state
+# Session state
 if "annotations" not in st.session_state:
     st.session_state.annotations = {}
 if "current_image" not in st.session_state:
     st.session_state.current_image = None
 
 # Sidebar
-st.sidebar.header("Settings")
+st.sidebar.header(" Settings")
 class_names = st.sidebar.text_input("Class names (comma separated)", "cat,dog,bird")
 class_list = [c.strip() for c in class_names.split(",")]
 selected_class = st.sidebar.selectbox("Assign class to NEW boxes", class_list)
@@ -51,7 +51,7 @@ if uploaded_file is not None:
         key=f"canvas_{filename}",
     )
 
-    # Process drawn rectangles
+    # Process rectangles
     if canvas_result.json_data is not None:
         objects = canvas_result.json_data["objects"]
         new_bboxes = []
@@ -66,8 +66,8 @@ if uploaded_file is not None:
                 })
         st.session_state.annotations[filename] = new_bboxes
 
-    # Display current annotations
-    st.subheader("Current Annotations")
+    # Display annotations
+    st.subheader(" Current Annotations")
     current_boxes = st.session_state.annotations.get(filename, [])
     if current_boxes:
         for i, box in enumerate(current_boxes):
@@ -75,10 +75,36 @@ if uploaded_file is not None:
     else:
         st.write("No annotations yet. Draw rectangles on the image.")
 
-    # Export section
-    st.subheader("Export Annotations")
+    # Statistics sidebar
+    st.sidebar.subheader(" Annotation Statistics")
+    if current_boxes:
+        class_counts = {}
+        for box in current_boxes:
+            cls = box['class']
+            class_counts[cls] = class_counts.get(cls, 0) + 1
+        for cls, count in class_counts.items():
+            st.sidebar.write(f"**{cls}:** {count} box(es)")
+        st.sidebar.write(f"**Total boxes:** {len(current_boxes)}")
+    else:
+        st.sidebar.write("No annotations yet")
+
+    # Save/Load
+    if st.sidebar.button(" Save all annotations"):
+        os.makedirs("exports", exist_ok=True)
+        with open("exports/annotations_backup.json", "w") as f:
+            json.dump(st.session_state.annotations, f, indent=2)
+        st.sidebar.success("Saved to exports/annotations_backup.json")
+
+    if st.sidebar.button(" Load saved annotations"):
+        if os.path.exists("exports/annotations_backup.json"):
+            with open("exports/annotations_backup.json", "r") as f:
+                st.session_state.annotations = json.load(f)
+            st.sidebar.success("Annotations loaded")
+            st.rerun()
+
+    # Export buttons
+    st.subheader(" Export Annotations")
     col1, col2 = st.columns(2)
-    
     with col1:
         if st.button("Export as YOLO .txt"):
             os.makedirs("exports", exist_ok=True)
@@ -87,7 +113,7 @@ if uploaded_file is not None:
             class_map = {name: i for i, name in enumerate(class_list)}
             export_yolo(current_boxes, w, h, class_map, yolo_path)
             st.success(f"✅ YOLO saved to {yolo_path}")
-    
+
     with col2:
         if st.button("Export as COCO JSON"):
             os.makedirs("exports", exist_ok=True)
