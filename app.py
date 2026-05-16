@@ -10,37 +10,41 @@ from utils.coco_exporter import export_coco
 
 st.set_page_config(page_title="Image Annotation Tool", layout="wide")
 
-# Initialize theme in session state
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Function to toggle theme (no rerun needed – button click triggers natural rerun)
 def toggle_theme():
     st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
 
-# Dynamic CSS based on theme
 def get_css(theme):
     if theme == "dark":
         return """
         <style>
-        .main { padding: 0rem 1rem; }
-        .css-1d391kg { background-color: #1E1E2E; }
+        .stApp { background-color: #0E1117 !important; }
+        section[data-testid="stSidebar"] { background-color: #1E1E2E !important; }
         .annotation-card {
-            background-color: #2A2A3A;
+            background-color: #2A2A3A !important;
             border-radius: 8px;
             padding: 10px;
             margin: 8px 0;
             border-left: 4px solid #4CAF50;
             font-family: monospace;
-            color: #FAFAFA;
+            color: #FAFAFA !important;
         }
-        .annotation-card:hover { background-color: #3A3A4A; transform: translateX(4px); }
         .stButton button {
-            background-color: #4CAF50; color: white; border-radius: 8px;
-            width: 100%; border: none;
+            background-color: #4CAF50 !important;
+            color: white !important;
+            border-radius: 8px;
+            width: 100%;
         }
-        .stButton button:hover { background-color: #45a049; transform: translateY(-2px); }
-        .stats-box { background: #2A2A3A; border-radius: 10px; padding: 12px; margin-top: 15px; color: #FAFAFA; }
+        .stButton button:hover { background-color: #45a049 !important; }
+        .stats-box {
+            background: #2A2A3A !important;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+            color: #FAFAFA !important;
+        }
         .canvas-container { border: 1px solid #3A3A4A; border-radius: 12px; padding: 6px; background: #1E1E2E; }
         #MainMenu, footer, header { visibility: hidden; }
         </style>
@@ -48,31 +52,38 @@ def get_css(theme):
     else:
         return """
         <style>
-        .main { padding: 0rem 1rem; }
-        .css-1d391kg { background-color: #F0F0F0; }
+        .stApp { background-color: #F5F5F7 !important; }
+        section[data-testid="stSidebar"] { background-color: #F0F0F0 !important; }
         .annotation-card {
-            background-color: #FFFFFF;
+            background-color: #FFFFFF !important;
             border-radius: 8px;
             padding: 10px;
             margin: 8px 0;
             border-left: 4px solid #4CAF50;
             font-family: monospace;
-            color: #1E1E2E;
+            color: #1E1E2E !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .annotation-card:hover { background-color: #F9F9F9; transform: translateX(4px); }
         .stButton button {
-            background-color: #4CAF50; color: white; border-radius: 8px;
-            width: 100%; border: none;
+            background-color: #4CAF50 !important;
+            color: white !important;
+            border-radius: 8px;
+            width: 100%;
         }
-        .stButton button:hover { background-color: #45a049; transform: translateY(-2px); }
-        .stats-box { background: #FFFFFF; border-radius: 10px; padding: 12px; margin-top: 15px; color: #1E1E2E; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stButton button:hover { background-color: #45a049 !important; }
+        .stats-box {
+            background: #FFFFFF !important;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+            color: #1E1E2E !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
         .canvas-container { border: 1px solid #DDD; border-radius: 12px; padding: 6px; background: #FFFFFF; }
         #MainMenu, footer, header { visibility: hidden; }
         </style>
         """
 
-# Apply CSS for current theme
 st.markdown(get_css(st.session_state.theme), unsafe_allow_html=True)
 
 # Brand header
@@ -86,26 +97,26 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Session state for annotations
 if "annotations" not in st.session_state:
     st.session_state.annotations = {}
 if "current_image" not in st.session_state:
     st.session_state.current_image = None
 
-# Sidebar
 st.sidebar.header("⚙️ Settings")
 
-# Theme toggle button – calls toggle_theme on click
+# Theme toggle button
 if st.sidebar.button(f"🎨 Switch to {'Light' if st.session_state.theme == 'dark' else 'Dark'} Theme", use_container_width=True):
     toggle_theme()
-    # No explicit rerun needed – Streamlit will rerun after the callback
+    st.rerun()  # Force a clean rerun
+
+# Debug indicator
+st.sidebar.write(f"**Current theme:** {st.session_state.theme}")
 
 class_names = st.sidebar.text_input("Class names (comma separated)", "cat,dog,bird")
 class_list = [c.strip() for c in class_names.split(",")]
 selected_class = st.sidebar.selectbox("Assign class to NEW boxes", class_list)
 uploaded_file = st.sidebar.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
-# Main area
 if uploaded_file is not None:
     filename = uploaded_file.name
     st.session_state.current_image = filename
@@ -160,7 +171,7 @@ if uploaded_file is not None:
     else:
         st.info("No annotations yet.")
 
-    # Sidebar statistics
+    # Statistics
     st.sidebar.markdown('<div class="stats-box">', unsafe_allow_html=True)
     st.sidebar.markdown("#### 📊 Statistics")
     if current_boxes:
