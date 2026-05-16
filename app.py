@@ -8,28 +8,107 @@ import os
 from utils.yolo_exporter import export_yolo
 from utils.coco_exporter import export_coco
 
-st.set_page_config(page_title="Image Annotator", layout="wide")
-st.title(" Interactive Image Annotation Tool")
+st.set_page_config(page_title="Image Annotation Tool", layout="wide")
 
-# Session state
+# Initialize theme in session state
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
+
+# Function to toggle theme (no rerun needed – button click triggers natural rerun)
+def toggle_theme():
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+
+# Dynamic CSS based on theme
+def get_css(theme):
+    if theme == "dark":
+        return """
+        <style>
+        .main { padding: 0rem 1rem; }
+        .css-1d391kg { background-color: #1E1E2E; }
+        .annotation-card {
+            background-color: #2A2A3A;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            border-left: 4px solid #4CAF50;
+            font-family: monospace;
+            color: #FAFAFA;
+        }
+        .annotation-card:hover { background-color: #3A3A4A; transform: translateX(4px); }
+        .stButton button {
+            background-color: #4CAF50; color: white; border-radius: 8px;
+            width: 100%; border: none;
+        }
+        .stButton button:hover { background-color: #45a049; transform: translateY(-2px); }
+        .stats-box { background: #2A2A3A; border-radius: 10px; padding: 12px; margin-top: 15px; color: #FAFAFA; }
+        .canvas-container { border: 1px solid #3A3A4A; border-radius: 12px; padding: 6px; background: #1E1E2E; }
+        #MainMenu, footer, header { visibility: hidden; }
+        </style>
+        """
+    else:
+        return """
+        <style>
+        .main { padding: 0rem 1rem; }
+        .css-1d391kg { background-color: #F0F0F0; }
+        .annotation-card {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            border-left: 4px solid #4CAF50;
+            font-family: monospace;
+            color: #1E1E2E;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .annotation-card:hover { background-color: #F9F9F9; transform: translateX(4px); }
+        .stButton button {
+            background-color: #4CAF50; color: white; border-radius: 8px;
+            width: 100%; border: none;
+        }
+        .stButton button:hover { background-color: #45a049; transform: translateY(-2px); }
+        .stats-box { background: #FFFFFF; border-radius: 10px; padding: 12px; margin-top: 15px; color: #1E1E2E; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .canvas-container { border: 1px solid #DDD; border-radius: 12px; padding: 6px; background: #FFFFFF; }
+        #MainMenu, footer, header { visibility: hidden; }
+        </style>
+        """
+
+# Apply CSS for current theme
+st.markdown(get_css(st.session_state.theme), unsafe_allow_html=True)
+
+# Brand header
+st.markdown("""
+<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+    <div style="font-size: 2.5rem;">🖍️</div>
+    <div>
+        <h1 style="margin: 0;">Image Annotation Tool</h1>
+        <p style="margin: 0; color: #888;">Draw bounding boxes · Assign classes · Export YOLO/COCO</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Session state for annotations
 if "annotations" not in st.session_state:
     st.session_state.annotations = {}
 if "current_image" not in st.session_state:
     st.session_state.current_image = None
 
 # Sidebar
-st.sidebar.header(" Settings")
+st.sidebar.header("⚙️ Settings")
+
+# Theme toggle button – calls toggle_theme on click
+if st.sidebar.button(f"🎨 Switch to {'Light' if st.session_state.theme == 'dark' else 'Dark'} Theme", use_container_width=True):
+    toggle_theme()
+    # No explicit rerun needed – Streamlit will rerun after the callback
+
 class_names = st.sidebar.text_input("Class names (comma separated)", "cat,dog,bird")
 class_list = [c.strip() for c in class_names.split(",")]
 selected_class = st.sidebar.selectbox("Assign class to NEW boxes", class_list)
-
 uploaded_file = st.sidebar.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
+# Main area
 if uploaded_file is not None:
     filename = uploaded_file.name
     st.session_state.current_image = filename
-
-    # Read image
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -38,7 +117,7 @@ if uploaded_file is not None:
     if filename not in st.session_state.annotations:
         st.session_state.annotations[filename] = []
 
-    # Canvas
+    st.markdown('<div class="canvas-container">', unsafe_allow_html=True)
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",
         stroke_width=2,
@@ -50,8 +129,8 @@ if uploaded_file is not None:
         drawing_mode="rect",
         key=f"canvas_{filename}",
     )
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Process rectangles
     if canvas_result.json_data is not None:
         objects = canvas_result.json_data["objects"]
         new_bboxes = []
@@ -66,61 +145,65 @@ if uploaded_file is not None:
                 })
         st.session_state.annotations[filename] = new_bboxes
 
-    # Display annotations
-    st.subheader(" Current Annotations")
     current_boxes = st.session_state.annotations.get(filename, [])
+
+    st.subheader("📝 Current Annotations")
     if current_boxes:
         for i, box in enumerate(current_boxes):
-            st.write(f"{i+1}. **{box['class']}** → x:{box['left']:.0f}, y:{box['top']:.0f}, w:{box['width']:.0f}, h:{box['height']:.0f}")
+            st.markdown(f"""
+            <div class="annotation-card">
+                <span style="font-weight: bold;">{box['class']}</span>
+                <span style="float: right; color: #aaa;">#{i+1}</span><br>
+                <span style="font-size: 0.8rem;">x: {box['left']:.0f}, y: {box['top']:.0f}, w: {box['width']:.0f}, h: {box['height']:.0f}</span>
+            </div>
+            """, unsafe_allow_html=True)
     else:
-        st.write("No annotations yet. Draw rectangles on the image.")
+        st.info("No annotations yet.")
 
-    # Statistics sidebar
-    st.sidebar.subheader(" Annotation Statistics")
+    # Sidebar statistics
+    st.sidebar.markdown('<div class="stats-box">', unsafe_allow_html=True)
+    st.sidebar.markdown("#### 📊 Statistics")
     if current_boxes:
         class_counts = {}
         for box in current_boxes:
             cls = box['class']
             class_counts[cls] = class_counts.get(cls, 0) + 1
         for cls, count in class_counts.items():
-            st.sidebar.write(f"**{cls}:** {count} box(es)")
-        st.sidebar.write(f"**Total boxes:** {len(current_boxes)}")
+            st.sidebar.markdown(f"**{cls}:** {count} box(es)")
+        st.sidebar.markdown(f"**Total boxes:** {len(current_boxes)}")
     else:
-        st.sidebar.write("No annotations yet")
+        st.sidebar.markdown("*No annotations yet*")
+    st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
-    # Save/Load
-    if st.sidebar.button(" Save all annotations"):
+    if st.sidebar.button("💾 Save all annotations", use_container_width=True):
         os.makedirs("exports", exist_ok=True)
         with open("exports/annotations_backup.json", "w") as f:
             json.dump(st.session_state.annotations, f, indent=2)
         st.sidebar.success("Saved to exports/annotations_backup.json")
 
-    if st.sidebar.button(" Load saved annotations"):
+    if st.sidebar.button("📂 Load saved annotations", use_container_width=True):
         if os.path.exists("exports/annotations_backup.json"):
             with open("exports/annotations_backup.json", "r") as f:
                 st.session_state.annotations = json.load(f)
             st.sidebar.success("Annotations loaded")
             st.rerun()
 
-    # Export buttons
-    st.subheader(" Export Annotations")
+    st.subheader("📤 Export Annotations")
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Export as YOLO .txt"):
+        if st.button("📄 Export as YOLO .txt", use_container_width=True):
             os.makedirs("exports", exist_ok=True)
             base_name = os.path.splitext(filename)[0]
             yolo_path = os.path.join("exports", f"{base_name}.txt")
             class_map = {name: i for i, name in enumerate(class_list)}
             export_yolo(current_boxes, w, h, class_map, yolo_path)
-            st.success(f"✅ YOLO saved to {yolo_path}")
-
+            st.success(f"✅ YOLO saved to `{yolo_path}`")
     with col2:
-        if st.button("Export as COCO JSON"):
+        if st.button("📦 Export as COCO JSON", use_container_width=True):
             os.makedirs("exports", exist_ok=True)
             base_name = os.path.splitext(filename)[0]
             coco_path = os.path.join("exports", f"{base_name}_coco.json")
             export_coco(current_boxes, filename, w, h, class_list, coco_path)
-            st.success(f"✅ COCO JSON saved to {coco_path}")
-
+            st.success(f"✅ COCO JSON saved to `{coco_path}`")
 else:
-    st.info(" Upload an image to start annotating")
+    st.info("👈 Upload an image from the sidebar to start annotating")
