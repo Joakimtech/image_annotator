@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Annotation Tools Portfolio</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px; text-align: center; }
+        .projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; padding: 40px; }
+        .project-card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; transition: transform 0.3s; }
+        .project-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .tech-tag { background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px; }
+        .btn { display: inline-block; background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🖍️ Data Annotation Tools Portfolio</h1>
+        <p>Professional tools for computer vision annotation workflows</p>
+    </div>
+    
+    <div class="projects">
+        <div class="project-card">
+            <h2>🎨 Interactive Annotation Tool</h2>
+            <p>Web-based bounding box annotation tool with YOLO/COCO export</p>
+            <div>
+                <span class="tech-tag">Streamlit</span>
+                <span class="tech-tag">OpenCV</span>
+                <span class="tech-tag">Python</span>
+            </div>
+            <a href="#" class="btn">View Project →</a>
+        </div>
+        
+        <div class="project-card">
+            <h2>🧠 Weak Supervision Pipeline</h2>
+            <p>Automated text labeling using Snorkel and heuristic rules</p>
+            <div>
+                <span class="tech-tag">Snorkel</span>
+                <span class="tech-tag">spaCy</span>
+                <span class="tech-tag">NLP</span>
+            </div>
+            <a href="#" class="btn">View Project →</a>
+        </div>
+        
+        <div class="project-card">
+            <h2>🔧 Annotation Utilities</h2>
+            <p>CLI tool for format conversion, validation, and agreement analysis</p>
+            <div>
+                <span class="tech-tag">CLI</span>
+                <span class="tech-tag">COCO</span>
+                <span class="tech-tag">YOLO</span>
+            </div>
+            <a href="https://github.com/YOUR_USERNAME/annot-utils" class="btn">View Project →</a>
+        </div>
+    </div>
+</body>
+</html>
